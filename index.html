@@ -1,31 +1,36 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>LA TV Shows | Home</title>
-    <meta name="description" content="A Catalog of Shows Set in Los Angeles" />
+    <title>Spam Email Directory</title>
+    <meta name="description" content="A data catalog for identifying spam emails." />
     <link rel="stylesheet" href="style.css" />
+    
+    <!--Load the google tool-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <!--run the code here-->
     <script type="text/javascript" src="scripts.js"></script>
   </head>
 
   <body>
     <header class="main-header">
-      <h1 class="title">LA TV Shows</h1>
-    </header>
-    <div id="card-container"></div>
-    <div class="card" style="display: none">
-      <div class="card-content">
-        <h2>TV Show Title</h2>
-        <img src="" alt="TV Show Poster" />
-        <ul>
-          <li>Bullet Point 1</li>
-          <li>Bullet Point 2</li>
-          <li>Bullet Point 3</li>
-        </ul>
+      <h1 class="title">Spam Email Directory</h1>
+      <div class="filter-buttons">
+        <button onclick="showAll()">Show All 10 Email</button>
+        <button onclick="showSpam()">Show First 10 Spam Email</button>
+        <button onclick="showLegit()">Show First 10 Legit Email</button>
       </div>
+    </header>
+    
+    <div id="email-container">
+      <!-- Email items will be dynamically generated here -->
     </div>
+
+  
     <div class="footer">
-      <button onclick="quoteAlert();">Get A Quote!</button>
-      <button onclick="removeLastCard();">Remove A Card!</button>
+      <button onclick="addEmail();">Add An Email!</button>
+      <button onclick="removeLastEmail();">Remove An Email!</button>
+      
     </div>
   </body>
 </html>

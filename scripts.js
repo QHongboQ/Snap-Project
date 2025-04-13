@@ -1,97 +1,167 @@
-/**
- * Data Catalog Project Starter Code - SEA Stage 2
- *
- * This file is where you should be doing most of your work. You should
- * also make changes to the HTML and CSS files, but we want you to prioritize
- * demonstrating your understanding of data structures, and you'll do that
- * with the JavaScript code you write in this file.
- *
- * The comments in this file are only to help you learn how the starter code
- * works. The instructions for the project are in the README. That said, here
- * are the three things you should do first to learn about the starter code:
- * - 1 - Change something small in index.html or style.css, then reload your
- *    browser and make sure you can see that change.
- * - 2 - On your browser, right click anywhere on the page and select
- *    "Inspect" to open the browser developer tools. Then, go to the "console"
- *    tab in the new window that opened up. This console is where you will see
- *    JavaScript errors and logs, which is extremely helpful for debugging.
- *    (These instructions assume you're using Chrome, opening developer tools
- *    may be different on other browsers. We suggest using Chrome.)
- * - 3 - Add another string to the titles array a few lines down. Reload your
- *    browser and observe what happens. You should see a fourth "card" appear
- *    with the string you added to the array, but a broken image.
- *
- */
+/*This is an object, contain three arrays, I will add elements later, after I read the file*/
+const email = {
+  isSpam: [],
+  title: [],
+  result: []
+}
 
-const FRESH_PRINCE_URL =
-  "https://upload.wikimedia.org/wikipedia/en/3/33/Fresh_Prince_S1_DVD.jpg";
-const CURB_POSTER_URL =
-  "https://m.media-amazon.com/images/M/MV5BZDY1ZGM4OGItMWMyNS00MDAyLWE2Y2MtZTFhMTU0MGI5ZDFlXkEyXkFqcGdeQXVyMDc5ODIzMw@@._V1_FMjpg_UX1000_.jpg";
-const EAST_LOS_HIGH_POSTER_URL =
-  "https://static.wikia.nocookie.net/hulu/images/6/64/East_Los_High.jpg";
+// Define variables
+let allRows = [];
 
-// This is an array of strings (TV show titles)
-let titles = [
-  "Fresh Prince of Bel Air",
-  "Curb Your Enthusiasm",
-  "East Los High",
-];
-// Your final submission should have much more data than this, and
-// you should use more than just an array of strings to store it all.
+// Load the CSV file using Papa Parse
+Papa.parse("fraud_email_.csv", {
+  download: true,
+  header: true,
+  skipEmptyLines: true,
+  complete: loadFile
+});
 
-// This function adds cards the page to display the data in the array
-function showCards() {
-  const cardContainer = document.getElementById("card-container");
-  cardContainer.innerHTML = "";
-  const templateCard = document.querySelector(".card");
+// Load the CSV file and parse it
+function loadFile(results) {
+  allRows = results.data;
+  loadEmails(3);
+}
 
-  for (let i = 0; i < titles.length; i++) {
-    let title = titles[i];
 
-    // This part of the code doesn't scale very well! After you add your
-    // own data, you'll need to do something totally different here.
-    let imageURL = "";
-    if (i == 0) {
-      imageURL = FRESH_PRINCE_URL;
-    } else if (i == 1) {
-      imageURL = CURB_POSTER_URL;
-    } else if (i == 2) {
-      imageURL = EAST_LOS_HIGH_POSTER_URL;
+// The basic function to load emails, every function needed call this one
+function loadEmails(count, filterType) {
+  // Clear all data, and re-load the email data
+  resetEmailData();
+
+  // This variable serve for filter
+  // If I need first ten spam, I will skip legit email
+  // So when I found one spam email, this variable will plus one
+  let added = 0;
+
+  for (let i = 0; i < allRows.length; i++) {
+    let row = allRows[i];
+
+    // Function of filter, spam or legit
+    if (filterType === "spam" && row.Class !== "1") {
+      continue;
+    }
+    if (filterType === "legit" && row.Class !== "0") {
+      continue;
     }
 
-    const nextCard = templateCard.cloneNode(true); // Copy the template card
-    editCardContent(nextCard, title, imageURL); // Edit title and image
-    cardContainer.appendChild(nextCard); // Add new card to the container
+    addRowToEmail(row);
+    added++;
+
+    // This also serve for filter
+    // If I need first ten spam or legit email
+    // I will stop when I found ten emails
+    if (added >= count) {
+      break;
+    }
+  }
+
+  displayEmails();
+}
+
+
+// This function will add the email data to the email object
+function addRowToEmail(row) {
+  // Interact with "header: true," when the file has header 
+  // Using row.Class to access the first column of the CSV file, which is 0 or 1
+  // Using row.Text to access the second column of the CSV file, which is the email text
+  const IsSpam = row.Class;
+  // Load the first 10 words of the email text as the title
+  const Title = row.Text.split(" ").slice(0, 10).join(" ") + " ...";
+
+  // Add the email data to the email object
+  email.isSpam.push(IsSpam);
+  email.title.push(Title);
+  if (IsSpam == "1") {
+    email.result.push("This is a spam email. Be cautious.");
+  } else {
+    email.result.push("This is a legitimate email. It is safe.");
   }
 }
 
-function editCardContent(card, newTitle, newImageURL) {
-  card.style.display = "block";
+// This function will add the email data to the email object
+function addEmail() {
+  // Arrive to the maximum number of emails
+  if (email.title.length >= 10) {
+    alert("You can only add up to 10 emails.");
+    return;
+  }
 
-  const cardHeader = card.querySelector("h2");
-  cardHeader.textContent = newTitle;
-
-  const cardImage = card.querySelector("img");
-  cardImage.src = newImageURL;
-  cardImage.alt = newTitle + " Poster";
-
-  // You can use console.log to help you debug!
-  // View the output by right clicking on your website,
-  // select "Inspect", then click on the "Console" tab
-  console.log("new card:", newTitle, "- html: ", card);
+  // If still has space, I will add the next email
+  const nextRow = allRows[email.title.length];
+  addRowToEmail(nextRow);
+  displayEmails();
 }
 
-// This calls the addCards() function when the page is first loaded
-document.addEventListener("DOMContentLoaded", showCards);
 
-function quoteAlert() {
-  console.log("Button Clicked!");
-  alert(
-    "I guess I can kiss heaven goodbye, because it got to be a sin to look this good!"
-  );
+// Button to remove the last email
+function removeLastEmail() {
+  if (email.title.length > 0) {
+    // Remove the last email from the arrays
+    email.isSpam.pop();
+    email.title.pop();
+    email.result.pop();
+    // Display the updated emails
+    displayEmails();
+  } else {
+    // When the arrays are empty, I will alert the user
+    alert("All cards have been removed. Nothing left to delete.");
+  }
 }
 
-function removeLastCard() {
-  titles.pop(); // Remove last item in titles array
-  showCards(); // Call showCards again to refresh
+
+// Main function to display the emails in the container
+function displayEmails() {
+  // Access the element with the ID "email-container" and clear its content
+  const container = document.getElementById("email-container");
+  // Clear the container before displaying new emails
+  container.innerHTML = "";
+
+  // Until the length of the email title, I will create a card for each email
+  for (let i = 0; i < email.title.length; i++) {
+    let title = email.title[i];
+    let isSpam = email.isSpam[i];
+    let result = email.result[i];
+
+    // Check the value of isSpam and set the image URL accordingly
+    let imageURL;
+    if (isSpam == "1") {
+      imageURL = "Fraud.png";
+    } else {
+      imageURL = "No_Fraud.png";
+    }
+
+    // Interact with the HTML, create a card for each email
+    const card = document.createElement("div"); // Access the div element
+    card.className = "email-card";  // <div class="email-card"></div>
+    card.innerHTML =
+    '<img src="' + imageURL + '" class="email-status" />' +
+    '<p class="email-title">Title: ' + title + '</p>' +
+    '<p class="alert-text">' + result + '</p>';
+    
+    // DOM operation, append the card to the container
+    container.appendChild(card);
+  }
+}
+
+
+// Set the array as empty, to clear the data
+function resetEmailData() {
+  email.isSpam = [];
+  email.title = [];
+  email.result = [];
+}
+
+// Function to show all emails
+function showAll() {
+  loadEmails(10);
+}
+
+// Filter function to show spam emails
+function showSpam() {
+  loadEmails(10, "spam");
+}
+
+// Filter function to show legitimate emails
+function showLegit() {
+  loadEmails(10, "legit");
 }
